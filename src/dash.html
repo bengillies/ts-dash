@@ -1,0 +1,157 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<head>
+		<title>Dash</title>
+		<meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=0">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<link rel="apple-touch-icon" href="/bags/dash_public/tiddlers/roundel-icon.png">
+		<link rel="apple-touch-icon-precomposed" href="/bags/dash_public/tiddlers/roundel-icon.png">
+		<link rel="stylesheet" href="http://tiddlyspace.com/bags/fonts_public/tiddlers/font-awesome.css">
+		<link rel="stylesheet" href="http://tiddlyspace.com/bags/dash_public/tiddlers/HtmlCss">
+	</head>
+
+	<body>
+		<header class="mobile-active">
+			<button class="mobile"><i class="icon-align-justify"></i></button><img src="/SiteIcon" alt="SiteIcon"><h1 id="title">Loading...</h1>
+		</header>
+
+		<section id="sidebar" class="mobile-inactive">
+			<nav>
+				<ul>
+					<li><a href="/" title="Home"><i class="icon-home"></i></a></li>
+					<li><a href="/activity" title="Activity"><i class="icon-comments"></i></a></li>
+					<li><a href="/_space" title="Space"><i class="icon-cogs"></i></a></li>
+					<li><a href="/_account" title="User"><i class="icon-user"></i></a></li>
+				</ul>
+			</nav>
+
+			<section id="search">
+				<form>
+					<input type="search"><input type="button" class="star" value="&#9733;">
+
+					<div>
+						<label>
+							<input type="radio" name="filter" value="All">
+							<span>All</span>
+						</label>
+
+						<label>
+							<input type="radio" name="filter" value="Default" checked>
+							<span>Default</span>
+						</label>
+
+						<label>
+							<input type="radio" name="filter" value="Private">
+							<span>Private</span>
+						</label>
+					</div>
+				</form>
+
+				<ul>
+					<li class="loading"><span>Loading tiddlers...<span></li>
+				</ul>
+			</section>
+
+			<section id="toolbar">
+				<button name="new"><i class="icon-plus"></i></button>
+				<button name="refresh"><i class="icon-refresh"></i></button>
+				<button name="more"><i class="icon-star"></i></button><div id="more"></div>
+			</section>
+		</section>
+
+		<section id="tiddlerActions" class="mobile-active">
+			<button name="edit"><i class="icon-pencil"></i></button>
+			<button name="reply"><i class="icon-share-alt"></i></button>
+		</section>
+
+		<article class="mobile-active">
+		</article>
+
+		<ul id="tags" class="mobile-active">
+		</ul>
+
+		<footer>
+			Created by <a href="http://bengilli.es">Ben Gillies</a>
+		</footer>
+
+		<script type="text/x-template" id="tiddlerList">
+			{{^tiddlers}}
+				<li class="loading"><span>No tiddlers...<span></li>
+			{{/tiddlers}}
+			{{#tiddlers}}
+				<li><img src="{{icon}}" alt="{{space}}"><a href="/{{title}}" title="{{title}}">{{title}}</a><button class="tools"><i class="icon-cog"></i></button><span class="controls"><button class="star"><i class="icon-star-empty"></i></button><button class="delete"><i class="icon-trash"></i></button></span></li>
+			{{/tiddlers}}
+		</script>
+
+		<script type="text/x-template" id="tiddlerText">
+			<div class="text"><h2>{{title}}</h2>{{{render}}}</div>
+		</script>
+
+		<script type="text/x-template" id="tiddlerTags">
+			{{#tags}}
+				<li><a href="/search?q=tag:{{.}}">{{.}}</a></li>
+			{{/tags}}
+		</script>
+
+		<script type="text/x-template" id="tiddlerImage">
+			<div class="image">
+				<h2>{{title}}</h2>
+				<img src="http://tiddlyspace.com{{route}}" alt="{{title}}">
+			</div>
+		</script>
+
+		<script type="text/x-template" id="tiddlerCode">
+			<div class="code"><h2>{{title}}</h2><pre>{{text}}</pre></div>
+		</script>
+
+		<script type="text/x-template" id="tiddlerHTML">
+			<iframe src="{{route}}"></iframe>
+		</script>
+
+		<script type="text/x-template" id="tiddlerEdit">
+			<form>
+				<input type="text" name="title" value="{{title}}">
+				<textarea name="text">{{text}}</textarea>
+				<input type="text" name="tags" value="{{#tags}}[[{{.}}]] {{/tags}}">
+				<fieldset class="hidden">
+					<legend>Fields</legend>
+					<dl>
+						{{#fields}}
+							<dt><input type="text" class="key" value="{{key}}"></dt>
+							<dd><input type="text" class="value" value="{{value}}"></dd>
+						{{/fields}}
+					</dl>
+					<input type="button" value="Add field">
+				</fieldset>
+				<label>
+					<input type="checkbox" name="private" {{^public}}checked{{/public}}>
+					<span>keep private</span>
+				</label>
+				<div class="buttons">
+					<input type="button" value="Cancel">
+					<input type="submit" value="Done">
+				</div>
+			</form>
+		</script>
+
+		<script type="text/x-template" id="viewTiddler">
+			{{{text}}}
+		</script>
+
+		<script type="text/x-template" id="moreTemplate">
+			<ul>
+				{{#titles}}
+					<li><a href="{{href}}">{{text}}</a></li>
+				{{/titles}}
+			</ul>
+		</script>
+
+		<script type="text/javascript" src="http://tiddlyspace.com/bags/common/tiddlers/jquery.js"></script>
+		<script type="text/javascript" src="http://tiddlyspace.com/bags/benspa_public/tiddlers/mustache.min.js"></script>
+		<script type="text/javascript" src="http://tiddlyspace.com/bags/benspa_public/tiddlers/routes.js"></script>
+		<script type="text/javascript" src="http://tiddlyspace.com/bags/tiddlyspace/tiddlers/chrjs"></script>
+		<script type="text/javascript" src="http://tiddlyspace.com/bags/benspa_public/tiddlers/chrjs-store.js"></script>
+		<script type="text/javascript" src="http://tiddlyspace.com/bags/common/tiddlers/backstage.js"></script>
+		<script type="text/javascript" src="dash.js"></script>
+	</body>
+</html>
