@@ -3,93 +3,12 @@
  */
 // TODO: make work offline
 
-(function() {
-	function makeAsync(fn) {
-		window.setTimeout(fn, 0);
-	}
-
-	function curry(fn) {
-		var curriedArgs = Array.prototype.slice.call(arguments, 1),
-			self = this;
-		return function() {
-			var args = [].concat(curriedArgs);
-			Array.prototype.push.apply(args, arguments);
-			fn.apply(self, args);
-		}
-	}
-
-	function Emitter() {}
-
-	Emitter.prototype.trigger = function(feed) {
-		var args = Array.prototype.slice.call(arguments, 1);
-		if (Object.hasOwnProperty.call(this, feed)) {
-			this[feed].forEach(function(fn) {
-				makeAsync(curry.apply(undefined, [fn].concat(args)));
-			});
-		}
-	};
-
-	Emitter.prototype.on = function(feed, callback) {
-		if (!Object.hasOwnProperty.call(this, feed)) {
-			this[feed] = [callback];
-		} else {
-			this[feed].push(callback);
-		}
-	};
-
-	Emitter.prototype.off = function(feed, fn) {
-		var i, length, feedList;
-		if (!callback) {
-			delete this[feed];
-		} else if (Object.hasOwnProperty.call(this, feed)) {
-			feedList = this[feed];
-			length = feedList.length;
-			while (i < length) {
-				if (feedList[i] === fn) {
-					feedList.splice(i, 1)
-				} else {
-					i++;
-				}
-			}
-		}
-	};
-
-	var pub = new Emitter();
-
-	function Renderer() {
-		var renderers = Object.create(null),
-			emitter = new Emitter();
-
-		return {
-			render: curry.call(renderers, emitter.trigger),
-			register: curry.call(renderers, emitter.on)
-		}
-	}
-
-	var renderer = new Renderer();
-
-	var store = tiddlyweb.Store();
-
-	var makeFat = (function() {
-		var isFat = false;
-		return function(callback) {
-			if (!isFat) {
-				$.ajaxSetup({ data: { fat: 1 } });
-				store.refresh(function() {
-					isFat = true;
-					callback.apply(this, arguments);
-				});
-				$.ajaxSetup({ data: {} });
-			} else {
-				makeAsync(callback);
-			}
-		}
-	}());
-
-	var templates = Object.create(null);
+require(['edit', 'pub', 'templates', 'render', 'search', 'utils', 'store'],
+function(Edit, pub, templates, renderer, Search, utils, store) {
 
 	// bootstrap the default HTML representation to match dash
-	document.addEventListener('DOMContentLoaded', function() {
+
+	function bootstrap() {
 		// detect if we are in dash directly or if we are in the HTML
 		// representation
 		var cache = {};
@@ -152,26 +71,21 @@
 		} else {
 			loadDash();
 		}
-	});
+	}
+
+	document.addEventListener('DOMContentLoaded', bootstrap);
+	if (~['complete', 'interactive'].indexOf(document.readyState)) {
+		utils.makeAsync(bootstrap);
+	}
 
 	function loadDash() {
-		var search = document.querySelector('#search'),
-			newTabClick,
+		var newTabClick = utils.newTabClick,
 			extractTitle = function(text) {
 				return decodeURIComponent(/(#?[^\/#]*)$/.exec(text)[1]);
 			};
 
-		newTabClick = function(ev) {
-			return ev.altKey || ev.metaKey || ev.ctrlKey || ev.shiftKey ||
-				ev.keyCode;
-		};
-
-		// cache the templates
-		[].forEach.call(document
-			.querySelectorAll('script[type="text/x-template"]'),
-			function(template) {
-				templates[template.id] = template.textContent;
-			});
+		pub.search = new Search(document.getElementById('search'));
+		templates.domLoaded();
 
 		// set document title
 		store.getDefaults(function(c) {
@@ -180,71 +94,8 @@
 		});
 
 		// load tiddlers into the list
-		pub.on('tiddlers-loaded', function(tiddlers) {
-			pub.trigger('refresh-tiddlers', tiddlers);
-			search.querySelector('ul')
-				.addEventListener('click', function(ev) {
-					var target = ev.target;
-					if (target.nodeName === 'A' && !newTabClick(ev)) {
-						ev.preventDefault();
-						window.history.pushState(undefined,
-							target.textContent, target.href);
-						renderer.render('view-tiddler', target.textContent);
-						pub.trigger('mobile-toggle');
-					}
-				});
-		});
 		store.refresh(function(tiddlers) {
-			// load tiddlers
-			pub.trigger('tiddlers-loaded', tiddlers);
-		});
-
-
-		// listen for searches/filter changes
-		var searchTimer;
-		search.querySelector('input[type="search"]').addEventListener('keyup',
-			function(ev) {
-				if (searchTimer) window.clearTimeout(searchTimer);
-				// wait for a pause in typing before searching
-				searchTimer = window.setTimeout(function() {
-					pub.trigger('refresh-tiddlers', store(), 'skinny');
-				}, 500);
-			});
-		search.querySelector('form').addEventListener('submit', function(ev) {
-			ev.preventDefault();
-			pub.trigger('refresh-tiddlers', store());
-		});
-		search.querySelector('form').addEventListener('click',
-			function(ev) {
-				if ((ev.target.getAttribute('type') === 'radio') ||
-						(ev.target.parentNode.nodeName === 'LABEL')){
-					pub.trigger('refresh-tiddlers', store());
-				}
-			});
-
-		// hook up the tool button(s)
-		search.addEventListener('click', function(ev) {
-			var locateTid = function(loadEvent) {
-				var link, listEl, el = ev.target;
-				listEl = (el.parentNode.nodeName === 'LI') ? el.parentNode :
-					(el.parentNode.parentNode.nodeName === 'LI') ?
-						el.parentNode.parentNode :
-						el.parentNode.parentNode.parentNode;
-				link = listEl.querySelector('[type="search"], a');
-				link = link.value ? link.value : extractTitle(link.href);
-				pub.trigger(loadEvent, link, listEl);
-			}
-			var target = (ev.target.nodeName === 'BUTTON') ? ev.target :
-				(ev.target.parentNode.nodeName === 'BUTTON') ?
-				ev.target.parentNode : null;
-
-			if (target){
-				switch(target.className) {
-					case 'star': locateTid('star'); break;
-					case 'tools': locateTid('expand-tools'); break;
-					case 'delete': locateTid('delete');
-				}
-			}
+			pub.trigger('search.refresh', tiddlers);
 		});
 
 		// trap internal links in the tiddler
@@ -270,7 +121,7 @@
 				tag = decodeURIComponent(/tag:([^;&]+)$/.exec(target.href)[1]);
 				window.history.pushState(undefined, document.title,
 					target.href);
-				pub.trigger('search', '#' + tag);
+				pub.trigger('search.search', '#' + tag);
 				pub.trigger('mobile-toggle');
 				ev.preventDefault();
 			}
@@ -319,7 +170,7 @@
 				var target = ev.target,
 					title = document.querySelector('article')
 						.getAttribute('data-tiddler');
-				pub.trigger(target.name + '-click', title);
+				new Edit(title);
 			});
 
 		// hookup the reply button
@@ -342,7 +193,7 @@
 			});
 
 		// show the search elements
-		pub.trigger('toggle-search', 'show');
+		pub.trigger('search.toggle', 'show');
 
 		// XXX: dirty Android-has-a-rubbish-browser hack
 		// via http://chris-barr.com/index.php/entry/scrolling_a_overflowauto_element_on_a_touch_screen_device/
@@ -394,179 +245,8 @@
 		app.run();
 	}
 
-	pub.on('edit-click', function(title) {
-		var el = document.getElementsByTagName('article')[0],
-			gatherFields,
-			figureTags;
-
-		figureTags = function(tagString) {
-			var brackets = /^\s*\[\[([^\]\]]+)\]\](\s*.*)/,
-				whitespace = /^\s*([^\s]+)(\s*.*)/,
-				match,
-				rest = tagString,
-				tags = [];
-
-			match = brackets.exec(rest) || whitespace.exec(rest);
-			while (match) {
-				tags.push(match[1]);
-				rest = match[2];
-				match = brackets.exec(rest) || whitespace.exec(rest);
-			}
-
-			return tags;
-		};
-
-		gatherFields = function(tiddler) {
-			var newTid = new tiddlyweb.Tiddler({
-					title: el.querySelector('input[name="title"]').value,
-					text: el.querySelector('textarea[name="text"]').value,
-					tags: figureTags(el.querySelector('input[name="tags"]')
-						.value),
-					fields: {}
-				}), i, l, field, value
-				fieldList = el.querySelectorAll('fieldset input');
-
-			for(i = 0, l = fieldList.length; i < l; i++) {
-				field = fieldList[i];
-				if (field.className === 'key' && field.value) {
-					value = fieldList[++i];
-					if (value.value) {
-						newTid.fields[field.value] = value.value;
-					}
-				}
-			}
-
-			if (newTid.fields['server.content-type']) {
-				newTid.type = newTid.fields['server.content-type'];
-			}
-			newTid.bag = new tiddlyweb.Bag(tiddler.bag.name, tiddler.bag.host);
-			newTid['public'] = !el.querySelector('input[name="private"]')
-				.checked;
-
-			newTid.bag.name = newTid.bag.name.replace(/_[^_]+$/,
-				(newTid['public']) ? '_public' : '_private');
-
-			return newTid;
-		};
-
-		store.get(title || 'New Tiddler', function(tiddler) {
-			var isNew = false;
-			if (!tiddler) {
-				isNew = true;
-				tiddler = new tiddlyweb.Tiddler(title || 'New Tiddler');
-				tiddler.bag = store.getDefaults().pushTo;
-			}
-			var key, newFields = [], fields = tiddler.fields;
-			tiddler['public'] = (/_public$/.test(tiddler.bag.name)) ?
-				true : false;
-			for (key in fields) if (fields.hasOwnProperty(key)) {
-				newFields.push({
-					key: key,
-					value: fields[key]
-				});
-			}
-			tiddler.fields = newFields;
-			tiddler.fields.push({
-				key: 'server.content-type',
-				value: tiddler.type
-			});
-
-			renderer.render('mustache', el, templates['tiddlerEdit'], tiddler,
-				function(el) {
-					var fieldsFn,
-						fieldset = el.querySelector('fieldset');
-
-					// add a cancel button event handler
-					el.querySelector('.buttons input[type="button"]')
-						.addEventListener('click', function(ev) {
-							ev.preventDefault();
-							// remove any changes
-							store.remove(tiddler);
-							if (isNew) {
-								pub.trigger('load-default');
-							} else {
-								renderer.render('view-tiddler', tiddler.title);
-							}
-						});
-
-					// add a fields expander
-					fieldsFn = function(ev) {
-						switch(ev.target.nodeName) {
-							case 'LEGEND':
-								fieldset.className = (fieldset.className ===
-									'visible') ? 'hidden' : 'visible';
-								break;
-							case 'FIELDSET':
-								fieldset.className = 'visible';
-						}
-						ev.stopPropagation();
-					};
-					el.querySelector('fieldset').addEventListener('click',
-						fieldsFn);
-					el.querySelector('legend').addEventListener('click',
-						fieldsFn);
-
-					// add a new field handler
-					el.querySelector('fieldset [type="button"]')
-						.addEventListener('click', function(ev) {
-							var list = el.querySelector('dl');
-							list.innerHTML += ['<dt>',
-								'<input type="text" class="key">',
-								'</dt>',
-								'<dd>',
-								'<input type="text" class="value">',
-								'</dd>'].join('\n');
-							list = list.querySelectorAll('.key');
-							list[list.length - 1].focus();
-						});
-
-					// cache changes
-					el.querySelector('form').addEventListener('keyup',
-						function(ev) {
-							if (ev.target.name !== 'title') {
-								var newTid = gatherFields(tiddler);
-								store.add(newTid);
-							}
-						});
-
-					// add a submit button event handler
-					el.querySelector('form')
-						.addEventListener('submit', function(ev) {
-							var newTid = gatherFields(tiddler);
-
-							store.save(newTid, function(tid) {
-								if (tid) {
-									// remove the old tiddler
-									if (tid.title !== tiddler.title ||
-											tid.bag.name !== tiddler.bag.name) {
-										store.destroy(tiddler, function(t) {
-											if (!t) {
-												alert('There was a problem ' +
-													'moving' + t.title + '.');
-											}
-										});
-
-										window.history.pushState(undefined,
-											tid.title, tid.title);
-										renderer.render('view-tiddler', title);
-									}
-
-									renderer.render('view-tiddler',
-										tid.title);
-								} else {
-									alert('There was a problem saving ' +
-										newTid.title + '.');
-								}
-							});
-
-							ev.preventDefault();
-						});
-
-					// focus on the title by default
-					el.querySelector('input[name="title"]').focus();
-				});
-		});
-
+	pub.on('edit', function(title) {
+		new Edit(title);
 	});
 
 	pub.on('reply-click', function(el) {
@@ -581,7 +261,7 @@
 
 	});
 
-	pub.on('expand-tools', function(title, el) {
+	pub.on('tools', function(title, el) {
 		var hide = function(ev) {
 			el.className = el.className.replace('expand-tools', '');
 			document.removeEventListener('click', hide);
@@ -597,6 +277,7 @@
 			if (tiddler) {
 				el.parentNode.removeChild(el);
 			}
+			pub.trigger('load-default');
 		});
 	});
 
@@ -678,7 +359,7 @@
 					if (link.charAt(0) === '#') {
 						window.history.pushState(undefined, document.title,
 							target.href);
-						pub.trigger('search', target.textContent);
+						pub.trigger('search.search', target.textContent);
 					} else {
 						window.history.pushState(undefined, link,
 							target.href);
@@ -695,160 +376,15 @@
 
 	pub.on('new-click', function() {
 		window.history.pushState(undefined, 'New Tiddler', 'New Tiddler');
-		pub.trigger('edit-click');
+		new Edit;
 		pub.trigger('mobile-toggle');
-		pub.trigger('toggle-search', 'show', function() {});
+		pub.trigger('search.toggle', 'show', function() {});
 	});
 
 	pub.on('refresh-click', function() {
 		store.refresh(function(tiddlers) {
-			pub.trigger('refresh-tiddlers', tiddlers);
+			pub.trigger('search.refresh', tiddlers);
 		});
-	});
-
-	pub.on('toggle-search', function(action, callback) {
-		var animate = false;
-			search = document.getElementById('search');
-		[].forEach.call(search.querySelectorAll('form, ul'), function(el) {
-			if (el.className !== action) {
-				el.className = action;
-				animate = true;
-			}
-		});
-		if (animate) {
-			setTimeout(callback, 1000); // XXX: detect when the transition finishes
-		} else {
-			makeAsync(callback);
-		}
-	});
-
-	pub.on('share-click', function() {
-		var script, _share;
-
-		_share = function() {
-			var intent = new Intent('http://webintents.org/share',
-				'text/uri-list', window.location.href);
-			window.navigator.startActivity(intent);
-		};
-
-		if (typeof window.Intent === 'undefined') {
-			script = document.createElement('script');
-			script.type = 'text/javascript';
-			script.src = 'http://webintents.org/webintents.min.js';
-			script.addEventListener('load', function() {
-				_share();
-			});
-			document.body.appendChild(script);
-		} else {
-			_share();
-		}
-	});
-
-	pub.on('search', function(searchString) {
-		var search = document.querySelector('#search input[type="search"]');
-
-		search.value = searchString;
-		pub.trigger('refresh-tiddlers', store());
-	});
-
-	pub.on('refresh-tiddlers', function(tiddlers, skinny) {
-		var container = document.querySelector('#search'),
-			el = container.querySelector('ul'),
-			filter = container.querySelector('input[type="radio"]:checked')
-				.value,
-			search = container.querySelector('input[type="search"]').value,
-			radios = {
-				all: container.querySelector('[type="radio"][value="All"]'),
-				def: container.querySelector('[type="radio"][value="All"]'),
-				priv: container.querySelector('[type="radio"][value="All"]')
-			},
-			render = curry.call(renderer, renderer.render, 'mustache'),
-			applyFilters, addIcon, searchFn;
-
-		processTiddlers = function(tiddlers) {
-			switch (filter) {
-				case 'Private':
-					tiddlers = tiddlers.filter(function(tiddler) {
-						return /_private$/.test(tiddler.bag.name);
-					});
-					// follow through...
-				case 'Default':
-					tiddlers = tiddlers.space().find('!#excludeLists');
-			}
-			return tiddlers.map(addInfo);
-		};
-
-		addInfo = function(tiddler) {
-			var space = tiddler.bag.name.split('_'),
-				currentSpace = store.recipe.name.split('_'),
-				spaceMatch = space[0] === currentSpace[0];
-			tiddler.icon = spaceMatch ?
-				'/bags/tiddlyspace/tiddlers/' + space[1] + 'Icon' :
-				'http://' + space[0] + '.tiddlyspace.com/SiteIcon';
-			tiddler.space = spaceMatch ? space[1] : space[0];
-			return tiddler;
-		};
-
-		searchFn = function(tiddlers) {
-			var isIn = function(text, match) {
-				if (!text) return false;
-				match = match.toLowerCase();
-				text = typeof text === 'string' ? text.toLowerCase() :
-					text.map(function(a) { return a.toLowerCase(); });
-				return ~text.indexOf(match);
-			};
-			var countHash = {};
-			var calculateCount = function(tiddler) {
-				var count = 0;
-				count += tiddler.title === search ? 10 : 0;
-				count += isIn(tiddler.title, search) ? 5 : 0;
-				count += isIn(tiddler.tags, search) ? 3 : 0;
-				count += isIn(tiddler.text, search) ? 1 : 0;
-				return count;
-			};
-			return processTiddlers(tiddlers).sort(function(a, b) {
-				var aCount = countHash[a.uri],
-					bCount = countHash[b.uri];
-				if (aCount == null) {
-					aCount = calculateCount(a);
-					countHash[a.uri] = aCount;
-				}
-				if (bCount == null) {
-					bCount = calculateCount(b);
-					countHash[b.uri] = bCount;
-				}
-				return (a > b) ? -1 : (a < b) ? 1 : (a.modified > b.modified) ?
-					-1 : (a.modified < b.modified) ? 1 : 0;
-			}).filter(function(t) { return countHash[t.uri] > 0; });
-		};
-
-		if (search) {
-			try {
-				// has a filter string been passed in?
-				render(el, templates['tiddlerList'], {
-					tiddlers: processTiddlers(tiddlers.find(search))
-						.sort('-modified')
-				});
-			} catch(e) {
-				if (!skinny) {
-					// XXX: switch to using tiddlyweb search instead
-					makeFat(function() {
-						render(el, templates['tiddlerList'], {
-								tiddlers: searchFn(store())
-							});
-					});
-				} else {
-					render(el, templates['tiddlerList'], {
-						tiddlers: searchFn(tiddlers)
-					});
-				}
-			}
-		} else {
-			render(el, templates['tiddlerList'], {
-				tiddlers: processTiddlers(tiddlers).sort('-modified')
-			});
-		}
-
 	});
 
 	pub.on('mobile-toggle', function() {
@@ -878,66 +414,10 @@
 					el.className = 'mobile-inactive';
 				}
 			});
-			pub.trigger('toggle-search', 'show');
+			pub.trigger('search.toggle', 'show');
 			menu.className = menu.className.replace('mobile-inactive', '');
 			menu.className += 'mobile-active';
 		}
-	});
-
-	renderer.register('mustache', function(el, template, obj, callback) {
-		if (el && template) {
-			el.innerHTML = Mustache.to_html(template, obj);
-			if (typeof callback ===  'function') {
-				callback(el);
-			}
-		}
-	});
-
-	renderer.register('tiddler-text', function(title, callback) {
-		var tiddler = store.get(title),
-			el = document.createElement('div'),
-			render = curry.call(renderer, renderer.render, 'mustache', el);
-
-		store.get(title, function(tiddler, err, xhr) {
-			if (!tiddler || (xhr && ~[404].indexOf(xhr.status))) { // XXX: finish error code list
-				// no tiddler found so open edit mode with the new tiddler title
-				pub.trigger('edit-click', title);
-				return;
-			}
-			if (/^image\//.test(tiddler.type)) {
-				pub.trigger('toggle-search', 'show', function() {
-					render(templates['tiddlerImage'], tiddler, callback);
-				});
-			} else if (tiddler.type === 'text/html') {
-				pub.trigger('toggle-search', 'hide', function() {
-					render(templates['tiddlerHTML'], tiddler, callback);
-				});
-			} else if (tiddler.render) {
-				pub.trigger('toggle-search', 'show', function() {
-					render(templates['tiddlerText'], tiddler, callback);
-				});
-			} else {
-				pub.trigger('toggle-search', 'show', function() {
-					render(templates['tiddlerCode'], tiddler, callback);
-				});
-			}
-
-			renderer.render('mustache', document.getElementById('tags'),
-				templates['tiddlerTags'], tiddler);
-		}, true);
-	});
-
-	renderer.register('view-tiddler', function(title) {
-		document.querySelector('article').innerHTML = '';
-		renderer.render('tiddler-text', title, function(text) {
-			var el = document.querySelector('article');
-			text = text.innerHTML;
-			renderer.render('mustache', el, templates['viewTiddler'],
-				{ text: text });
-
-			el.setAttribute('data-tiddler', title);
-			document.title = title;
-		});
 	});
 
 	var app = new routes();
@@ -952,7 +432,7 @@
 			tag;
 		if (title === 'search') {
 			tag = decodeURIComponent(/tag:([^;&]+)$/.exec(req.url)[1]);
-			pub.trigger('search', '#' + tag);
+			pub.trigger('search.search', '#' + tag);
 		} else {
 			renderer.render('view-tiddler', title);
 		}
@@ -964,4 +444,4 @@
 			pub.trigger('more-click');
 		}
 	});
-}());
+});

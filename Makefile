@@ -1,8 +1,11 @@
-.PHONY: test upload
+.PHONY: test upload build
 
-upload:
-	find src -type f | egrep -v 'css|swp$$' | xargs -I {} tsupload dash {}
-	tsupload dash src/HtmlCss.css -N HtmlCss
+build:
+	cd src && r.js -o name=dash.js out=../dash.js baseUrl=. optimize=none
+
+upload: build
+	tsupload dash-test dash.{js,html}
+	tsupload dash-test HtmlCss.css -N HtmlCss
 
 test:
 	qunit test/index.html
