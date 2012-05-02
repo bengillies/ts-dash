@@ -1,15 +1,4 @@
-Things to do:
+@dash
+=====
 
-  - Present a filterable list of tiddlers
-  - Present quick links to starred tags for easy navigation
-  - Intelligent search ala @sidebar space, making use of regexp and filter-syntax
-  - keep everything up to date
-  - Activity feed view
-  - Integrate /_space and /_account apps
-  - Integrate @reply button
-  - Integrate into standard tiddler HTML representation
-  - Bulk tiddler management (deletion, moving between bags/spaces, etc)
-  - Responsive layout for desktop and mobile
-  - Edit mode that caches changes until save
-  - Offline mode
-  - Different views for different types of tiddler
+An SPA for TiddlySpace.
