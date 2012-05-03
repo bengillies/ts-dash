@@ -12,7 +12,7 @@
 
 	<body>
 		<header class="mobile-active">
-			<button class="mobile"><i class="icon-align-justify"></i></button><img src="/SiteIcon" alt="SiteIcon"><h1 id="title">Loading...</h1>
+			<button class="mobile"><i class="icon-align-justify"></i></button><img src="/SiteIcon" alt="SiteIcon"><h1>Loading...</h1>
 		</header>
 
 		<section id="sidebar" class="mobile-inactive">
@@ -84,7 +84,7 @@
 		</script>
 
 		<script type="text/x-template" id="tiddlerText">
-			<div class="text"><h2>{{title}}</h2>{{{render}}}</div>
+			<div class="text"><h2 id="title">{{title}}</h2>{{{render}}}</div>
 		</script>
 
 		<script type="text/x-template" id="tiddlerTags">
@@ -95,13 +95,13 @@
 
 		<script type="text/x-template" id="tiddlerImage">
 			<div class="image">
-				<h2>{{title}}</h2>
+				<h2 id="title">{{title}}</h2>
 				<img src="http://tiddlyspace.com{{route}}" alt="{{title}}">
 			</div>
 		</script>
 
 		<script type="text/x-template" id="tiddlerCode">
-			<div class="code"><h2>{{title}}</h2><pre>{{text}}</pre></div>
+			<div class="code"><h2 id="title">{{title}}</h2><pre>{{text}}</pre></div>
 		</script>
 
 		<script type="text/x-template" id="tiddlerHTML">

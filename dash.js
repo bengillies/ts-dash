@@ -582,7 +582,7 @@ function(Edit, pub, templates, renderer, Search, utils, store) {
 
 		// set document title
 		store.getDefaults(function(c) {
-			document.getElementById('title').textContent = c.pullFrom.name
+			document.querySelector('header h1').textContent = c.pullFrom.name
 				.replace(/_[^_]+/, '');
 		});
 
