@@ -26,6 +26,7 @@ function(pub, utils, templates, store, renderer) {
 				if (searchTimer) window.clearTimeout(searchTimer);
 				searchTimer = window.setTimeout(function() {
 					self.refresh(store(), 'skinny');
+					searchTimer = undefined;
 				}, 500);
 			},
 			'form.submit': function(ev) {
@@ -74,7 +75,8 @@ function(pub, utils, templates, store, renderer) {
 			var render = curry.call(renderer, renderer.render, 'mustache'),
 				el = this.list,
 				self = this,
-				search = this.getSearchString();
+				search = this.getSearchString(),
+				bindFn = function(t, s) { self.loadUpdatedTiddler(t, s); };
 
 			if (search) {
 				try {
@@ -98,17 +100,10 @@ function(pub, utils, templates, store, renderer) {
 					}
 				}
 			} else {
+				store.unbind('tiddler');
+				store.bind('tiddler', null, bindFn);
 				render(el, templates['tiddlerList'], {
 					tiddlers: this.processTiddlers(tiddlers).sort('-modified')
-						.bind(function(tiddler) {
-							var tmpEl = document.createElement('ul');
-							render(tmpEl, templates['tiddlerList'], {
-								tiddlers: [self.addInfo(tiddler)]
-							}, function(tmp) {
-								el.insertBefore(tmp.querySelector('li'),
-									el.childNodes[0]);
-							});
-						})
 				});
 			}
 		},
@@ -183,6 +178,39 @@ function(pub, utils, templates, store, renderer) {
 				renderer.render('view-tiddler', target.textContent);
 				pub.trigger('mobile-toggle');
 			}
+		},
+		loadUpdatedTiddler: function(tiddler, status) {
+			var tmpEl, currEl, self = this,
+				LIs = this.list.querySelectorAll('li'),
+				i = 0, l = LIs.length;
+
+			tiddler = this.processTiddlers(store.Collection([tiddler]))[0]
+
+			if (!tiddler) return;
+
+			for (; i < l; i++) {
+				tmpEl = LIs[i];
+				if (tmpEl.getAttribute('data-tiddler') === tiddler.title) {
+					currEl = tmpEl;
+					break;
+				}
+			}
+
+			if (currEl && status === 'deleted') {
+				this.list.removeChild(currEl);
+			} else if (currEl) {
+				this.list.removeChild(currEl);
+				this.list.insertBefore(currEl, this.list.childNodes[0]);
+			} else if (status !== 'deleted') {
+				tmpEl = document.createElement('ul');
+				renderer.render('mustache', tmpEl, templates['tiddlerList'], {
+					tiddlers: [this.addInfo(tiddler)]
+				}, function(tmp) {
+					self.list.insertBefore(tmpEl.querySelector('li'),
+						self.list.childNodes[0]);
+				});
+			}
+
 		}
 	});
 

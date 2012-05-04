@@ -536,7 +536,7 @@ nav ul li a {
 	background-color: #f5f4f0;
 	position: absolute;
 	width: 100%;
-	height: 55px;
+	height: 60px;
 	border-width: 0 0 1px;
 	border-color: #d5d5d5;
 	border-style: solid;
@@ -569,16 +569,17 @@ nav ul li a {
 	-moz-appearance: textfield;
 	display: inline-block;
 	margin: 3px 0 0 3px;
-	height: 25px;
-	padding: 0 5px;
-	font-size: 15px;
-	border-radius: 12px;
-	border: 1px solid gray;
+	padding: 0;
+	font-size: 25px;
+	border-radius: 6px;
+	border: 1px solid #7e7e79;
 	outline: 0;
 	position: absolute;
 	left: 0;
-	right: 25px;
+	right: 3px;
 	z-index: 1;
+	color: #443;
+	cackground-color: #fffefa;
 }
 
 #search .expand-tools .controls {
@@ -636,15 +637,18 @@ nav ul li a {
 	font-size: 17px;
 	width: 17px;
 	position: absolute;
-	top: 4px;
-	right: 3px;
+	top: 33px;
+	right: 9px;
+	z-index: 1;
 }
 
 #search form div {
 	height: 28px;
 	padding-left: 1.4%;
 	position: relative;
-	top: 28px;
+	top: 33px;
+	width: 94%;
+	left: 3px;
 }
 
 #search form input[type="radio"] {
@@ -681,7 +685,7 @@ nav ul li a {
 #search ul {
 	position: absolute;
 	bottom: 0;
-	top: 55px;
+	top: 61px;
 	overflow: auto;
 	margin: 0;
 	list-style-type: none;

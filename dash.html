@@ -79,7 +79,7 @@
 				<li class="loading"><span>No tiddlers...<span></li>
 			{{/tiddlers}}
 			{{#tiddlers}}
-				<li><img src="{{icon}}" alt="{{space}}"><a href="/{{title}}" title="{{title}}">{{title}}</a><button class="tools"><i class="icon-cog"></i></button><span class="controls"><button class="star"><i class="icon-star-empty"></i></button><button class="delete"><i class="icon-trash"></i></button></span></li>
+				<li data-tiddler="{{title}}"><img src="{{icon}}" alt="{{space}}"><a href="/{{title}}" title="{{title}}">{{title}}</a><button class="tools"><i class="icon-cog"></i></button><span class="controls"><button class="star"><i class="icon-star-empty"></i></button><button class="delete"><i class="icon-trash"></i></button></span></li>
 			{{/tiddlers}}
 		</script>
 

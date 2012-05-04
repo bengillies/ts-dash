@@ -131,7 +131,7 @@ function(pub, templates, utils, renderer, store) {
 						});
 
 						window.history.pushState(undefined, t.title, t.title);
-						renderer.render('view-tiddler', title);
+						renderer.render('view-tiddler', t.title);
 					}
 
 					renderer.render('view-tiddler', t.title);
