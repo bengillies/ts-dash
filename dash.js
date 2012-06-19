@@ -107,9 +107,9 @@ function(pub, utils, templates, store) {
 		},
 		'view-tiddler': function(title) {
 			var self = this;
-			document.querySelector('article').innerHTML = '';
+			document.querySelector('article,#article').innerHTML = '';
 			this.trigger('tiddler-text', title, function(text) {
-				var el = document.querySelector('article');
+				var el = document.querySelector('article,#article');
 				text = text.innerHTML;
 
 				self.trigger('mustache', el, templates['viewTiddler'],
@@ -586,6 +586,9 @@ function(Edit, pub, templates, renderer, Search, utils, store) {
 				el = document.createEvent('Event');
 				el.initEvent('load', true, true);
 				window.dispatchEvent(el);
+				// reload the reply button
+				createReplyButton(document
+					.querySelector('#tiddlerActions [name="reply"]'));
 
 				loadDash();
 			});

@@ -65,6 +65,9 @@ function(Edit, pub, templates, renderer, Search, utils, store) {
 				el = document.createEvent('Event');
 				el.initEvent('load', true, true);
 				window.dispatchEvent(el);
+				// reload the reply button
+				createReplyButton(document
+					.querySelector('#tiddlerActions [name="reply"]'));
 
 				loadDash();
 			});

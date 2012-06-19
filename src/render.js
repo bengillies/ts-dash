@@ -47,9 +47,9 @@ function(pub, utils, templates, store) {
 		},
 		'view-tiddler': function(title) {
 			var self = this;
-			document.querySelector('article').innerHTML = '';
+			document.querySelector('article,#article').innerHTML = '';
 			this.trigger('tiddler-text', title, function(text) {
-				var el = document.querySelector('article');
+				var el = document.querySelector('article,#article');
 				text = text.innerHTML;
 
 				self.trigger('mustache', el, templates['viewTiddler'],
