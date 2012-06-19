@@ -411,6 +411,15 @@ article table caption {
 	font-style: italic;
 }
 
+#article hr,
+article hr {
+	border-width: 1px 0 0;
+	border-style: solid;
+	border-color: #443;
+	width: 85%;
+	margin: 2.5em auto 1em;
+}
+
 #article code,
 article code,
 article > .text pre {
@@ -955,7 +964,8 @@ only screen and (max-device-width: 767px) {
 	article.mobile-inactive,
 	article.mobile-inactive iframe,
 	#tags.mobile-inactive {
-		left: 100%;
+		left: 95%;
+		right: -100%;
 		-webkit-transition: left, 0.5s;
 		-moz-transition: left, 0.5s;
 		-ms-transition: left, 0.5s;

@@ -944,7 +944,7 @@ function(Edit, pub, templates, renderer, Search, utils, store) {
 	var app = new routes();
 
 	app.get('/bags/:bag/tiddlers/:tiddler', function(req) {
-		var title = decodeURIComponent(req.params.title);
+		var title = decodeURIComponent(req.params.tiddler);
 		renderer.render('view-tiddler', title);
 	});
 
