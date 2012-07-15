@@ -58,9 +58,9 @@ function(pub, utils, templates, store, renderer) {
 					animate = true;
 				}
 			});
-			if (animate) {
+			if (animate && callback) {
 				setTimeout(callback, 1000); // XXX: hacky
-			} else {
+			} else if (callback) {
 				makeAsync(callback);
 			}
 		},

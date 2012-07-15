@@ -374,6 +374,14 @@ article > form fieldset input[type="text"] {
 	width: 100%;
 }
 
+article aside.date {
+	float: right;
+	margin-top: 0.6em;
+	padding-top: 20px;
+	color: #78787A;
+	font-style: italic;
+}
+
 #article table,
 article table {
 	border-color: #665;
@@ -558,10 +566,14 @@ nav ul li a {
 	-ms-transition: top, 0.5s ease 0.5s;
 	-o-transition: top, 0.5s ease 0.5s;
 	-transition: top, 0.5s ease 0.5s;
+	-webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+	outline: none;
+	-webkit-transform: translateZ(0);
 }
 
 #search form.show {
 	top: 0;
+	-webkit-transform: translateZ(0);
 	-webkit-transition: top, 0.5s;
 	-moz-transition: top, 0.5s;
 	-ms-transition: top, 0.5s;
@@ -588,7 +600,8 @@ nav ul li a {
 	right: 3px;
 	z-index: 1;
 	color: #443;
-	cackground-color: #fffefa;
+	background-color: #fffefa;
+	max-width: 97%;
 }
 
 #search .expand-tools .controls {
@@ -703,6 +716,7 @@ nav ul li a {
 	background-color: rgba(245, 244, 240, .8);
 	right: 100%;
 	left: -100%;
+	-webkit-transform: translateZ(0);
 	-webkit-transition: all 0.5s;
 	-moz-transition: all 0.5s;
 	-ms-transition: all 0.5s;
@@ -713,6 +727,7 @@ nav ul li a {
 #search ul.show {
 	right: 2%;
 	left: 0;
+	-webkit-transform: translateZ(0);
 	-webkit-transition: all 0.5s ease 0.5s;
 	-moz-transition: all 0.5s ease 0.5s;
 	-ms-transition: all 0.5s ease 0.5s;
@@ -738,7 +753,7 @@ nav ul li a {
 }
 
 #search ul a {
-	width: 77%;
+	width: 75%;
 	display: inline-block;
 	padding: 7px 0 7px 2%;
 	font-size: 14px;
@@ -855,7 +870,7 @@ footer,
  */
 @media only screen and (max-device-width: 780px) {
 	#search form div {
-		height: 40px;
+		height: 50px;
 	}
 
 	#search form input[type="radio"] + span {
@@ -863,7 +878,7 @@ footer,
 	}
 
 	#search form {
-		height: 69px;
+		height: 74px;
 		top: -69px;
 	}
 
@@ -966,6 +981,7 @@ only screen and (max-device-width: 767px) {
 	#tags.mobile-inactive {
 		left: 95%;
 		right: -100%;
+		-webkit-transform: translateZ(0);
 		-webkit-transition: left, 0.5s;
 		-moz-transition: left, 0.5s;
 		-ms-transition: left, 0.5s;
@@ -978,6 +994,7 @@ only screen and (max-device-width: 767px) {
 	article.mobile-active iframe,
 	#tags.mobile-active {
 		left: 0;
+		-webkit-transform: translateZ(0);
 		-webkit-transition: left, 0.5s;
 		-moz-transition: left, 0.5s;
 		-ms-transition: left, 0.5s;
@@ -988,6 +1005,7 @@ only screen and (max-device-width: 767px) {
 	#tiddlerActions.mobile-inactive,
 	#app-picker.mobile-inactive {
 		top: -200px !important;
+		-webkit-transform: translateZ(0);
 		-webkit-transition: top 0.5s;
 		-moz-transition: top 0.5s;
 		-o-transition: top 0.5s;
@@ -998,6 +1016,7 @@ only screen and (max-device-width: 767px) {
 	#tiddlerActions.mobile-active,
 	#app-picker.mobile-active {
 		top: 0;
+		-webkit-transform: translateZ(0);
 		-webkit-transition: top 0.5s;
 		-moz-transition: top 0.5s;
 		-o-transition: top 0.5s;
@@ -1022,14 +1041,26 @@ only screen and (max-device-width: 767px) {
 		border: 0;
 		position: absolute;
 		top: 0;
-		bottom: 0;
+		min-height: 100%;
+		height: auto;
+	}
+
+	article > form[name="text"] {
+		min-height: 20em;
+	}
+
+	article aside.date {
+		display: none;
 	}
 
 	#toolbar,
-	#search,
 	#search ul,
 	nav,
 	#sidebar {
 		width: 100%;
+	}
+
+	#search {
+		width: 95%;
 	}
 }

@@ -21,12 +21,27 @@ define('store',[], function() {
 });
 
 define('utils', ['store'], function(store) {
-	var makeAsync = function(fn) {
+	var makeAsync = ('postMessage' in window) ? function(fn) {
+		var secret = Math.random(),
+			origin = window.location.origin ||
+				window.location.protocol + '//' + window.location.host ||
+				'*';
+        function _callback(ev) {
+            if (ev.data === secret) {
+                window.removeEventListener('message', _callback);
+                fn();
+            }
+        }
+        window.addEventListener('message', _callback);
+        window.postMessage(secret, origin);
+	} : function(fn) {
 		window.setTimeout(fn, 0);
 	};
 
 	return {
 		makeAsync: makeAsync,
+		click: ('ontouchstart' in document.documentElement) ? 'touchstart' :
+			'click',
 		newTabClick: function(ev) {
 			return ev.altKey || ev.metaKey || ev.ctrlKey || ev.shiftKey ||
 				ev.keyCode;
@@ -83,6 +98,7 @@ function(pub, utils, templates, store) {
 					}
 					return;
 				}
+				tiddler.timeago = $.timeago(tiddler.modified);
 				if (/^image\//.test(tiddler.type)) {
 					pub.trigger('search.toggle', 'show', function() {
 						render(templates['tiddlerImage'], tiddler, fn);
@@ -360,9 +376,9 @@ function(pub, utils, templates, store, renderer) {
 					animate = true;
 				}
 			});
-			if (animate) {
+			if (animate && callback) {
 				setTimeout(callback, 1000); // XXX: hacky
-			} else {
+			} else if (callback) {
 				makeAsync(callback);
 			}
 		},
@@ -638,49 +654,54 @@ function(Edit, pub, templates, renderer, Search, utils, store) {
 			});
 
 		// trap links in the tag section
-		document.getElementById('tags').addEventListener('click', function(ev) {
-			var target = ev.target,
-				tag;
-			if (target.nodeName === 'A' && !newTabClick(ev)) {
-				tag = decodeURIComponent(/tag:([^;&]+)$/.exec(target.href)[1]);
-				window.history.pushState(undefined, document.title,
-					target.href);
-				pub.trigger('search.search', '#' + tag);
-				pub.trigger('mobile-toggle');
-				ev.preventDefault();
-			}
-		});
+		document.getElementById('tags').addEventListener(utils.click,
+			function(ev) {
+				var target = ev.target,
+					tag;
+				if (target.nodeName === 'A' && !newTabClick(ev)) {
+					ev.preventDefault();
+					tag = decodeURIComponent(
+						/tag:([^;&]+)$/.exec(target.href)[1]);
+					window.history.pushState(undefined, document.title,
+						target.href);
+					pub.trigger('search.search', '#' + tag);
+					pub.trigger('mobile-toggle');
+				}
+			});
 
 		// hook up the nav
-		document.querySelector('nav').addEventListener('click', function(ev) {
-			var target = ev.target, title;
-			if ((target.nodeName === 'A' || target.parentNode.nodeName === 'A')
-					&& !newTabClick(ev)) {
-				title = extractTitle(target.href || target.parentNode.href);
-				switch (title) {
-					case '':
-						pub.trigger('load-default');
-						pub.trigger('mobile-toggle');
-						break;
-					case '#more':
-						pub.trigger('more-click');
-						ev.stopPropagation();
-						break;
-					default:
-						window.history.pushState(undefined, target.title ||
-							target.parentNode.title, target.href ||
-							target.parentNode.href);
-						renderer.render('view-tiddler', title);
-						pub.trigger('mobile-toggle');
+		document.querySelector('nav').addEventListener(utils.click,
+			function(ev) {
+				var target = ev.target, title;
+				if ((target.nodeName === 'A' ||
+						target.parentNode.nodeName === 'A')
+						&& !newTabClick(ev)) {
+					title = extractTitle(target.href || target.parentNode.href);
+					switch (title) {
+						case '':
+							pub.trigger('load-default');
+							pub.trigger('mobile-toggle');
+							break;
+						case '#more':
+							pub.trigger('more-click');
+							ev.stopPropagation();
+							break;
+						default:
+							window.history.pushState(undefined, target.title ||
+								target.parentNode.title, target.href ||
+								target.parentNode.href);
+							renderer.render('view-tiddler', title);
+							pub.trigger('mobile-toggle');
+					}
+					ev.preventDefault();
 				}
-				ev.preventDefault();
-			}
-		});
+			});
 
 		// make the buttons in toolbar go
-		document.getElementById('toolbar').addEventListener('click',
+		document.getElementById('toolbar').addEventListener(utils.click,
 			function(ev) {
 				var target = ev.target;
+				ev.preventDefault();
 				if (target.nodeName === 'BUTTON' ||
 						target.parentNode.nodeName === 'BUTTON') {
 					pub.trigger((target.name || target.parentNode.name) +
@@ -690,11 +711,12 @@ function(Edit, pub, templates, renderer, Search, utils, store) {
 
 		// hookup the edit button
 		document.querySelector('#tiddlerActions button[name="edit"]')
-			.addEventListener('click', function(ev) {
+			.addEventListener(utils.click, function(ev) {
 				var target = ev.target,
 					title = document.querySelector('article')
 						.getAttribute('data-tiddler');
 				new Edit(title);
+				ev.preventDefault();
 			});
 
 		// hookup the reply button
@@ -711,8 +733,10 @@ function(Edit, pub, templates, renderer, Search, utils, store) {
 		}
 
 		// hookup the mobile back button
-		document.querySelector('button.mobile').addEventListener('click',
+		document.querySelector('button.mobile').addEventListener(utils.click,
 			function(ev) {
+				ev.preventDefault();
+				ev.stopPropagation();
 				pub.trigger('mobile-toggle');
 			});
 
@@ -779,7 +803,7 @@ function(Edit, pub, templates, renderer, Search, utils, store) {
 		_loadReply = function() {
 			var ev = document.createEvent('Event');
 			window.createReplyButton(el);
-			ev.initEvent('click', true, true);
+			ev.initEvent(utils.click, true, true);
 			el.dispatchEvent(ev);
 		};
 
@@ -788,11 +812,11 @@ function(Edit, pub, templates, renderer, Search, utils, store) {
 	pub.on('tools', function(title, el) {
 		var hide = function(ev) {
 			el.className = el.className.replace('expand-tools', '');
-			document.removeEventListener('click', hide);
+			document.removeEventListener(utils.click, hide);
 		};
 		if (el) {
 			el.className += ' expand-tools';
-			document.addEventListener('click', hide);
+			document.addEventListener(utils.click, hide);
 		}
 	});
 
@@ -848,7 +872,7 @@ function(Edit, pub, templates, renderer, Search, utils, store) {
 		var el = document.getElementById('more'),
 			hideMenu = function() {
 				el.className = '';
-				document.removeEventListener('click', hideMenu);
+				document.removeEventListener(utils.click, hideMenu);
 			};
 
 		if (!/visible/.test(el.className)) {
@@ -875,8 +899,8 @@ function(Edit, pub, templates, renderer, Search, utils, store) {
 				el.className += 'visible';
 			});
 
-			document.addEventListener('click', hideMenu);
-			el.addEventListener('click', function(ev) {
+			document.addEventListener(utils.click, hideMenu);
+			el.addEventListener(utils.click, function(ev) {
 				var target = ev.target, link;
 				if (ev.target.nodeName === 'A') {
 					link = target.textContent;

@@ -84,7 +84,7 @@
 		</script>
 
 		<script type="text/x-template" id="tiddlerText">
-			<div class="text"><h2 id="title">{{title}}</h2>{{{render}}}</div>
+			<div class="text"><aside class="date">{{timeago}}</aside><h2 id="title">{{title}}</h2>{{{render}}}</div>
 		</script>
 
 		<script type="text/x-template" id="tiddlerTags">
@@ -94,14 +94,14 @@
 		</script>
 
 		<script type="text/x-template" id="tiddlerImage">
-			<div class="image">
+			<div class="image"><aside class="date">{{timeago}}</aside>
 				<h2 id="title">{{title}}</h2>
 				<img src="http://tiddlyspace.com{{route}}" alt="{{title}}">
 			</div>
 		</script>
 
 		<script type="text/x-template" id="tiddlerCode">
-			<div class="code"><h2 id="title">{{title}}</h2><pre>{{text}}</pre></div>
+			<div class="code"><aside class="date">{{timeago}}</aside><h2 id="title">{{title}}</h2><pre>{{text}}</pre></div>
 		</script>
 
 		<script type="text/x-template" id="tiddlerHTML">
@@ -147,6 +147,7 @@
 		</script>
 
 		<script type="text/javascript" src="http://tiddlyspace.com/bags/common/tiddlers/jquery.js"></script>
+<script type="text/javascript" src="http://tiddlyspace.com/bags/tivity-extra_public/tiddlers/jquery.timeago.js"></script>
 		<script type="text/javascript" src="http://tiddlyspace.com/bags/benspa_public/tiddlers/mustache.min.js"></script>
 		<script type="text/javascript" src="http://tiddlyspace.com/bags/benspa_public/tiddlers/routes.js"></script>
 		<script type="text/javascript" src="http://tiddlyspace.com:8081/socket.io/socket.io.js"></script>

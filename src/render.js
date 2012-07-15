@@ -23,6 +23,7 @@ function(pub, utils, templates, store) {
 					}
 					return;
 				}
+				tiddler.timeago = $.timeago(tiddler.modified);
 				if (/^image\//.test(tiddler.type)) {
 					pub.trigger('search.toggle', 'show', function() {
 						render(templates['tiddlerImage'], tiddler, fn);

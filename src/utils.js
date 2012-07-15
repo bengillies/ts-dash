@@ -1,10 +1,25 @@
 define('utils', ['store'], function(store) {
-	var makeAsync = function(fn) {
+	var makeAsync = ('postMessage' in window) ? function(fn) {
+		var secret = Math.random(),
+			origin = window.location.origin ||
+				window.location.protocol + '//' + window.location.host ||
+				'*';
+        function _callback(ev) {
+            if (ev.data === secret) {
+                window.removeEventListener('message', _callback);
+                fn();
+            }
+        }
+        window.addEventListener('message', _callback);
+        window.postMessage(secret, origin);
+	} : function(fn) {
 		window.setTimeout(fn, 0);
 	};
 
 	return {
 		makeAsync: makeAsync,
+		click: ('ontouchstart' in document.documentElement) ? 'touchstart' :
+			'click',
 		newTabClick: function(ev) {
 			return ev.altKey || ev.metaKey || ev.ctrlKey || ev.shiftKey ||
 				ev.keyCode;
