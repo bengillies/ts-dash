@@ -568,12 +568,10 @@ nav ul li a {
 	-transition: top, 0.5s ease 0.5s;
 	-webkit-tap-highlight-color: rgba(0,0,0,0) !important;
 	outline: none;
-	-webkit-transform: translateZ(0);
 }
 
 #search form.show {
 	top: 0;
-	-webkit-transform: translateZ(0);
 	-webkit-transition: top, 0.5s;
 	-moz-transition: top, 0.5s;
 	-ms-transition: top, 0.5s;
@@ -716,7 +714,6 @@ nav ul li a {
 	background-color: rgba(245, 244, 240, .8);
 	right: 100%;
 	left: -100%;
-	-webkit-transform: translateZ(0);
 	-webkit-transition: all 0.5s;
 	-moz-transition: all 0.5s;
 	-ms-transition: all 0.5s;
@@ -727,7 +724,6 @@ nav ul li a {
 #search ul.show {
 	right: 2%;
 	left: 0;
-	-webkit-transform: translateZ(0);
 	-webkit-transition: all 0.5s ease 0.5s;
 	-moz-transition: all 0.5s ease 0.5s;
 	-ms-transition: all 0.5s ease 0.5s;
@@ -981,7 +977,6 @@ only screen and (max-device-width: 767px) {
 	#tags.mobile-inactive {
 		left: 95%;
 		right: -100%;
-		-webkit-transform: translateZ(0);
 		-webkit-transition: left, 0.5s;
 		-moz-transition: left, 0.5s;
 		-ms-transition: left, 0.5s;
@@ -994,7 +989,6 @@ only screen and (max-device-width: 767px) {
 	article.mobile-active iframe,
 	#tags.mobile-active {
 		left: 0;
-		-webkit-transform: translateZ(0);
 		-webkit-transition: left, 0.5s;
 		-moz-transition: left, 0.5s;
 		-ms-transition: left, 0.5s;
@@ -1005,7 +999,6 @@ only screen and (max-device-width: 767px) {
 	#tiddlerActions.mobile-inactive,
 	#app-picker.mobile-inactive {
 		top: -200px !important;
-		-webkit-transform: translateZ(0);
 		-webkit-transition: top 0.5s;
 		-moz-transition: top 0.5s;
 		-o-transition: top 0.5s;
@@ -1016,7 +1009,6 @@ only screen and (max-device-width: 767px) {
 	#tiddlerActions.mobile-active,
 	#app-picker.mobile-active {
 		top: 0;
-		-webkit-transform: translateZ(0);
 		-webkit-transition: top 0.5s;
 		-moz-transition: top 0.5s;
 		-o-transition: top 0.5s;
